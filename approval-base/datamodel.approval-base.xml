@@ -2,7 +2,8 @@
 <itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
   <classes>
     <class id="ApprovalScheme" _delta="define">
-      <parent>DBObject</parent>
+      <parent>Incident</parent>
+      <!-- <parent>DBObject</parent> -->
       <php_parent>
         <name>_ApprovalScheme_</name>
       </php_parent>
@@ -381,7 +382,7 @@
       ]);
 
 		$sClassList = implode("', '", MetaModel::EnumParentClasses(get_class($oObj), ENUM_PARENT_CLASSES_ALL));
-		$oSet = new DBObjectSet(DBObjectSearch::FromOQL("SELECT TriggerOnApprovalRequest AS t WHERE t.target_class IN ('$sClassList')"));
+		$oSet = new IncidentSet(IncidentSearch::FromOQL("SELECT TriggerOnApprovalRequest AS t WHERE t.target_class IN ('$sClassList')"));
 		while ($oTrigger = $oSet->Fetch())
 		{
 			$oTrigger->DoActivate($aContext);
@@ -425,8 +426,8 @@
 			return false;
 		}
 
-		$oSearch = DBObjectSearch::FromOQL_AllData("SELECT User WHERE contactid = :approver_id");
-		$oSet = new DBObjectSet($oSearch, array(), array('approver_id' => $oApprover->GetKey()));
+		$oSearch = IncidentSearch::FromOQL_AllData("SELECT User WHERE contactid = :approver_id");
+		$oSet = new IncidentSet($oSearch, array(), array('approver_id' => $oApprover->GetKey()));
 		if ($oSet->Count() > 0)
 		{
 			// The approver has a login: show the link!
@@ -468,7 +469,7 @@
       <presentation/>
     </class>
     <class id="TriggerOnApprovalRequest" _delta="define">
-      <parent>DBObject</parent>
+      <parent>Incident</parent>
       <php_parent>
         <name>TriggerOnObject</name>
       </php_parent>
