@@ -4,8 +4,8 @@
     <class id="Incident">
       <lifecycle>
         <stimuli>
-          <stimulus id="ev_approve" xsi:type="StimulusInternal" _delta="redefine"/>
-          <stimulus id="ev_reject" xsi:type="StimulusInternal" _delta="redefine"/>
+           <stimulus id="ev_approve" xsi:type="StimulusInternal"/>
+          <stimulus id="ev_reject" xsi:type="StimulusInternal"/>
         </stimuli>
         <states>
           <state id="waiting_for_approval">
