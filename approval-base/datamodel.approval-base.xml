@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
   <classes>
-    <class id="Incident" _delta="define">
+    <class id="ApprovalScheme" _delta="define">
       <parent>DBObject</parent>
       <php_parent>
         <name>_ApprovalScheme_</name>
