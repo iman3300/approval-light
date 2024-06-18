@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension format="1.0">
+	<extension_code>combodo-approval-process-light</extension_code>
+	<company>Combodo SARL</company>
+	<author><![CDATA[Eric]]></author>
+	<label><![CDATA[Approval process light]]></label>
+	<description><![CDATA[Approve a request via a simple email]]></description>
+	<version>2.2.1</version>
+	<modules type="array">
+		<module>
+			<id>approval-base</id>
+			<version>tags/3.3.2</version>
+		</module>
+		<module>
+			<id>combodo-approval-light</id>
+			<version>tags/1.2.3</version>
+		</module>
+		<module>
+			<id>itop-approval-portal</id>
+			<version>tags/1.0.9</version>
+		</module>
+	</modules>
+	<release_date>2023-11-28</release_date>
+	<version_description><![CDATA[
+        * N°6577 - Update czech translations (thanks to @Stetinac!)
+		* N°6827 - Expiration date not working correctly on Approval Rules
+      ]]></version_description>
+	<itop_version_min>2.4.0</itop_version_min>
+	<status></status>
+	<mandatory>false</mandatory>
+	<more_info_url></more_info_url>
+</extension>

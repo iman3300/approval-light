@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+  <classes>
+    <class id="UserRequest">
+      <lifecycle>
+        <stimuli>
+          <stimulus id="ev_approve" xsi:type="StimulusInternal" _delta="redefine"/>
+          <stimulus id="ev_reject" xsi:type="StimulusInternal" _delta="redefine"/>
+        </stimuli>
+        <states>
+          <state id="waiting_for_approval">
+            <flags>
+              <attribute id="approver_id">
+                <mandatory _delta="define"/>
+              </attribute>
+            </flags>
+          </state>
+        </states>
+      </lifecycle>
+    </class>
+    <class id="UserRequestApprovalScheme" _delta="define">
+      <parent>ApprovalScheme</parent>
+      <properties>
+        <comment><![CDATA[/**
+ * Module approval-light
+ *
+ * @author      Erwan Taloc <erwan.taloc@combodo.com>
+ * @author      Romain Quetiez <romain.quetiez@combodo.com>
+ * @author      Denis Flaven <denis.flaven@combodo.com>
+ * @license     http://www.opensource.org/licenses/gpl-3.0.html LGPL
+ */]]></comment>
+        <category></category>
+        <abstract>false</abstract>
+        <key_type>autoincrement</key_type>
+        <db_table>userrequest_approval_scheme</db_table>
+        <db_key_field>id</db_key_field>
+        <db_final_class_field>finalclass</db_final_class_field>
+        <naming>
+          <format>%1$s %2$s</format>
+          <attributes>
+            <attribute id="obj_class"/>
+            <attribute id="obj_key"/>
+          </attributes>
+        </naming>
+        <display_template></display_template>
+        <icon></icon>
+        <reconciliation>
+          <attributes/>
+        </reconciliation>
+      </properties>
+      <fields/>
+      <methods>
+        <method id="GetApprovalScheme">
+          <static>true</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public static function GetApprovalScheme($oObject, $sReachingState)
+	{
+		if ((get_class($oObject) != 'UserRequest'))
+		{
+			return null;
+		}
+		if ($sReachingState != 'waiting_for_approval')
+		{
+			return null;
+		}
+
+		$sOQL = MetaModel::GetModuleSetting('combodo-approval-light', 'approver_select', 'SELECT Person AS p  WHERE id = :this->approver_id');
+		$oSearch = DBObjectSearch::FromOQL($sOQL);
+		if (!MetaModel::IsParentClass('Contact', $oSearch->GetClass()))
+		{
+			throw new Exception('Wrong class for approver_select query. Expecting a class derived from Contact, found: '.$oSearch->GetClass());
+		}
+		$oApproverSet = new DBObjectSet($oSearch, array(), $oObject->ToArgs('this'));
+		if ($oApproverSet->count() == 0)
+		{
+			return null;
+		}
+
+		$oScheme = new UserRequestApprovalScheme();
+
+		$aContacts = array();
+		while ($oApprover = $oApproverSet->Fetch())
+		{
+			$aContacts[] = array(
+				'class' => get_class($oApprover),
+				'id' => $oApprover->GetKey(),
+			);
+		}
+		$iTimeoutDelay = MetaModel::GetModuleSetting('combodo-approval-light', 'approval_timeout_delay', 5);
+		$bApproveOnTimeOut = MetaModel::GetModuleSetting('combodo-approval-light', 'approve_on_timeout', false);
+		$iExitCondition = self::EXIT_ON_FIRST_REJECT; // this is the default
+		$oScheme->AddStep($aContacts, $iTimeoutDelay*86400 /*timeout (s)*/, $bApproveOnTimeOut, $iExitCondition);
+
+		return $oScheme;
+	}]]></code>
+        </method>
+        <method id="GetPublicObjectDetails">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public function GetPublicObjectDetails($sContactClass, $iContactId)
+	{
+		$sBody = Dict::S('Approbation:PublicObjectDetails');
+		return $sBody;
+
+	}]]></code>
+        </method>
+        <method id="GetFormBody">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public function GetFormBody($sContactClass, $iContactId)
+	{
+		$sBody = Dict::S('Approbation:FormBody');
+		return $sBody;
+
+	}]]></code>
+        </method>
+        <method id="GetTitle">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public function GetTitle($sContactClass, $iContactId)
+	{
+		$sValue = Dict::S('Approbation:ApprovalRequested');
+		return $sValue;
+	}]]></code>
+        </method>
+        <method id="GetIntroduction">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public function GetIntroduction($sContactClass, $iContactId)
+	{
+		$sIntroduction = Dict::S('Approbation:Introduction');
+		return $sIntroduction;
+	}]]></code>
+        </method>
+        <method id="DoApprove">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public function DoApprove(&$oObject)
+	{
+		$oObject->ApplyStimulus('ev_approve');
+	}]]></code>
+        </method>
+        <method id="DoReject">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public function DoReject(&$oObject)
+	{
+		$oObject->ApplyStimulus('ev_reject');
+	}]]></code>
+        </method>
+        <method id="IsAllowedToSeeObjectDetails">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code>	public function IsAllowedToSeeObjectDetails($oApprover, $oObject)
+            {
+            if (is_null(UserRights::GetUserObject()))
+            {
+            // Not logged in
+            return false;
+            }
+            return true;
+            }</code>
+        </method>
+        <method id="IsAllowedToAbort">
+          <comment>/**&#13;
+            * Overridable to implement the abort feature&#13;
+            * @param oUser (implicitely the current user if null)	 &#13;
+            * Return true if the given user is allowed to abort	 &#13;
+            */</comment>
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	public function IsAllowedToAbort($oUser = null)
+	{
+		if (is_null($oUser))
+		{
+			$oUser = UserRights::GetUserObject();
+		}
+		if (is_null($oUser))
+		{
+			return false;
+		}
+
+		$sAllowedProfiles = MetaModel::GetConfig()->GetModuleSetting('combodo-approval-light', 'bypass_profiles', 'Administrator, Service Manager');
+		$aAllowed = array();
+		foreach (explode(',', $sAllowedProfiles) as $sProfileRaw)
+		{
+			$aAllowed[] = trim($sProfileRaw);
+		}
+
+		$oProfileSet = $oUser->Get('profile_list');
+		while ($oProfile = $oProfileSet->Fetch())
+		{
+			$sProfileName = $oProfile->Get('profile');
+			if (in_array($sProfileName, $aAllowed))
+			{
+				return true;
+			}
+		}
+		return false;
+	}]]></code>
+        </method>
+      </methods>
+      <presentation/>
+    </class>
+  </classes>
+  <menus>
+    <menu id="Ongoing approval" xsi:type="WebPageMenuNode" _delta="define">
+      <rank>6</rank>
+      <parent>RequestManagement</parent>
+      <url><![CDATA[$pages/exec.php?exec_module=approval-base&exec_page=report.php&exec_env=production&class=UserRequest&do_filter_my_approvals=on]]></url>
+    </menu>
+  </menus>
+</itop_design>
