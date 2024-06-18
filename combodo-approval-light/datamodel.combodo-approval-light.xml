@@ -18,7 +18,7 @@
         </states>
       </lifecycle>
     </class>
-    <class id="IncidentApprovalScheme" _delta="define">
+    <class id="UserRequestApprovalScheme" _delta="define">
       <parent>ApprovalScheme</parent>
       <properties>
         <comment><![CDATA[/**
@@ -32,7 +32,7 @@
         <category></category>
         <abstract>false</abstract>
         <key_type>autoincrement</key_type>
-        <db_table>Incident_approval_scheme</db_table>
+        <db_table>userrequest_approval_scheme</db_table>
         <db_key_field>id</db_key_field>
         <db_final_class_field>finalclass</db_final_class_field>
         <naming>
@@ -56,7 +56,7 @@
           <type>Overload-DBObject</type>
           <code><![CDATA[	public static function GetApprovalScheme($oObject, $sReachingState)
 	{
-		if ((get_class($oObject) != 'Incident'))
+		if ((get_class($oObject) != 'UserRequest'))
 		{
 			return null;
 		}
@@ -77,7 +77,7 @@
 			return null;
 		}
 
-		$oScheme = new IncidentApprovalScheme();
+		$oScheme = new UserRequestApprovalScheme();
 
 		$aContacts = array();
 		while ($oApprover = $oApproverSet->Fetch())
@@ -216,7 +216,7 @@
     <menu id="Ongoing approval" xsi:type="WebPageMenuNode" _delta="define">
       <rank>6</rank>
       <parent>RequestManagement</parent>
-      <url><![CDATA[$pages/exec.php?exec_module=approval-base&exec_page=report.php&exec_env=production&class=Incident&do_filter_my_approvals=on]]></url>
+      <url><![CDATA[$pages/exec.php?exec_module=approval-base&exec_page=report.php&exec_env=production&class=UserRequest&do_filter_my_approvals=on]]></url>
     </menu>
   </menus>
 </itop_design>
